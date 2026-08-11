@@ -1,0 +1,77 @@
+{% extends 'linkcheck/base.html' %}
+
+{% load i18n %}
+
+{% block details %}
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h2 class="mb-0">
+            🔗 {% if is_self %}{% translate "Mijn koppelingen" %}{% else %}{{ account.main_name }}{% endif %}
+        </h2>
+        {% if is_auditor %}
+            <a href="{% url 'linkcheck:index' %}" class="btn btn-sm lc-btn">&larr; {% translate "Overzicht" %}</a>
+        {% endif %}
+    </div>
+
+    {% if not account.characters %}
+        <div class="alert alert-secondary">{% translate "Dit account heeft nog geen characters gekoppeld." %}</div>
+    {% else %}
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 lc-table">
+                    <thead>
+                        <tr>
+                            {# Niet vertalen: AA's NL-vertaling maakt hier "Karakter" van. #}
+                            <th class="lc-sticky">Character</th>
+                            {% for c in account.columns %}
+                                <th class="text-center lc-col" title="{{ c.label }} — {{ c.n_scopes }} scope(s) · {{ c.key }}">
+                                    <span class="lc-colname">{{ c.label }}</span>
+                                    {% if not c.required %}<span class="lc-opt">○</span>{% endif %}
+                                </th>
+                            {% endfor %}
+                            <th class="text-center">{% translate "Gekoppeld" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ch in account.characters %}
+                            <tr class="{% if ch.revoked %}lc-bad{% elif ch.n_linked == ch.n_total %}lc-ok{% else %}lc-warn{% endif %}">
+                                <td class="lc-sticky">
+                                    <span class="lc-member">
+                                        <img src="https://images.evetech.net/characters/{{ ch.character_id }}/portrait?size=32"
+                                             alt="" width="32" height="32" class="rounded">
+                                        <span>
+                                            <span class="lc-name">
+                                                {{ ch.name }}{% if ch.is_main %} <span class="lc-badge">main</span>{% endif %}
+                                            </span>
+                                            <span class="lc-sub">{{ ch.corp_name }}</span>
+                                        </span>
+                                    </span>
+                                    {% if ch.revoked %}
+                                        <span class="lc-badge lc-badge-red"
+                                              title="{% translate 'Er ligt nog een token, maar de toestemming is op de EVE-site ingetrokken. Opnieuw koppelen via CharLink.' %}">
+                                            ⚠ {% translate "ingetrokken" %}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                {% for cell in ch.cells %}
+                                    <td class="text-center lc-cell">
+                                        {% if cell.linked %}
+                                            <span class="lc-yes">✓</span>
+                                        {% else %}
+                                            <span class="lc-no">✕</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                                <td class="text-center">{{ ch.n_linked }}/{{ ch.n_total }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <p class="lc-legend">
+            {% translate "Ontbreekt er iets? Koppel het bij" %}
+            <a href="/charlink/">CharLink</a>{% translate ", daar zet je alle apps in één keer aan." %}
+        </p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'linkcheck/base.html' %}
+
+{% load i18n %}
+
+{% block details %}
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h2 class="mb-0">🔗 {% translate "Link Check" %}</h2>
+        <a href="?scope={{ scope }}&amp;corp={{ corp_id }}&amp;refresh=1" class="btn btn-sm lc-btn"
+           title="{% translate 'Opnieuw berekenen (omzeilt de 10-minuten-cache)' %}">
+            <span style="font-weight:bold;font-size:1.15em">&#8635;</span> {% translate "Ververs" %}
+        </a>
+    </div>
+
+    <div class="lc-tiles mb-3">
+        <div class="lc-tile lc-tile-blue">
+            <div class="lc-tile-n">{{ n_total }}</div>
+            <div class="lc-tile-l">{% translate "accounts" %}</div>
+        </div>
+        <div class="lc-tile {% if n_incomplete %}lc-tile-amber{% else %}lc-tile-green{% endif %}">
+            <div class="lc-tile-n">{{ n_incomplete }}</div>
+            <div class="lc-tile-l">{% translate "niet compleet gekoppeld" %}</div>
+        </div>
+        <div class="lc-tile {% if n_revoked %}lc-tile-red{% else %}lc-tile-green{% endif %}">
+            <div class="lc-tile-n">{{ n_revoked }}</div>
+            <div class="lc-tile-l">{% translate "met een ingetrokken token" %}</div>
+        </div>
+    </div>
+
+    <form method="get" class="d-flex gap-2 flex-wrap mb-3 align-items-center">
+        {% for f in scopes %}
+            <a href="?scope={{ f.key }}{% if corp_id %}&amp;corp={{ corp_id }}{% endif %}"
+               class="btn btn-sm {% if scope == f.key %}btn-{{ f.color }}{% else %}btn-outline-{{ f.color }}{% endif %}">
+                {{ f.label }}
+            </a>
+        {% endfor %}
+        <input type="hidden" name="scope" value="{{ scope }}">
+        <select name="corp" class="form-select form-select-sm lc-corp" onchange="this.form.submit()">
+            <option value="">{% translate "Alle corporaties" %}</option>
+            {% for id, name in corps %}
+                <option value="{{ id }}" {% if corp_id == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+        </select>
+        <span class="ms-auto small text-muted">
+            {{ rows|length }} {% translate "rij(en)" %}
+        </span>
+    </form>
+
+    {% if not rows %}
+        <div class="alert alert-secondary">
+            {% if scope == 'incomplete' %}
+                ✅ {% translate "Iedereen is compleet gekoppeld." %}
+            {% elif scope == 'revoked' %}
+                ✅ {% translate "Geen ingetrokken tokens." %}
+            {% else %}
+                {% translate "Geen accounts die aan dit filter voldoen." %}
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 lc-table">
+                    <thead>
+                        <tr>
+                            <th class="lc-sticky">{% translate "Lid" %}</th>
+                            <th class="text-center">{% translate "Chars" %}</th>
+                            {% for c in columns %}
+                                <th class="text-center lc-col" title="{{ c.label }} — {{ c.n_scopes }} scope(s) · {{ c.key }}">
+                                    <span class="lc-colname">{{ c.label }}</span>
+                                    {% if not c.required %}<span class="lc-opt" title="{% translate 'Telt niet mee voor compleet' %}">○</span>{% endif %}
+                                </th>
+                            {% endfor %}
+                            <th class="text-nowrap">{% translate "Status" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in rows %}
+                            <tr class="{% if r.complete %}lc-ok{% elif r.pct < 50 %}lc-bad{% else %}lc-warn{% endif %}">
+                                <td class="lc-sticky">
+                                    <a class="lc-member" href="{% url 'linkcheck:detail' r.user_id %}">
+                                        <img src="https://images.evetech.net/characters/{{ r.main_id }}/portrait?size=32"
+                                             alt="" width="32" height="32" class="rounded">
+                                        <span>
+                                            <span class="lc-name">{{ r.main_name }}</span>
+                                            <span class="lc-sub">{{ r.corp_name }}{% if r.state %} · {{ r.state }}{% endif %}</span>
+                                        </span>
+                                    </a>
+                                    {% if r.revoked %}
+                                        <span class="lc-badge lc-badge-red"
+                                              title="{% translate 'Toestemming ingetrokken' %}: {{ r.revoked|join:', ' }}">
+                                            ⚠ {{ r.revoked|length }} {% translate "ingetrokken" %}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ r.n_chars }}</td>
+                                {% for cell in r.cells %}
+                                    <td class="text-center lc-cell">
+                                        {% if cell.na %}
+                                            <span class="lc-na" title="{% translate 'Niet van toepassing voor dit account' %}">–</span>
+                                        {% elif cell.ok %}
+                                            <span class="lc-yes" title="{{ cell.label }}: {{ cell.linked }}/{{ cell.total }}">✓</span>
+                                        {% elif cell.partial %}
+                                            <span class="lc-part" title="{% translate 'Mist' %}: {{ cell.unlinked|join:', ' }}">{{ cell.linked }}/{{ cell.total }}</span>
+                                        {% else %}
+                                            <span class="lc-no" title="{% translate 'Mist' %}: {{ cell.unlinked|join:', ' }}">✕</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                                <td>
+                                    <div class="lc-prog" title="{{ r.done }}/{{ r.total_checks }}">
+                                        <div class="lc-prog-bar" style="width: {{ r.pct }}%"></div>
+                                    </div>
+                                    <span class="lc-sub">
+                                        {% if r.complete %}
+                                            ✅ {% translate "compleet" %}
+                                        {% else %}
+                                            {{ r.missing|join:", " }}{% if r.revoked %}{% if r.missing %} · {% endif %}{% translate "ingetrokken token" %}{% endif %}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <p class="lc-legend">
+            ✓ {% translate "alle characters gekoppeld" %} ·
+            <span class="lc-part">2/3</span> {% translate "deels" %} ·
+            ✕ {% translate "geen enkele" %} ·
+            <span class="lc-na">–</span> {% translate "niet van toepassing (geen rechten voor die app)" %} ·
+            <span class="lc-opt">○</span> {% translate "telt niet mee voor 'compleet'" %}
+        </p>
+    {% endif %}
+{% endblock %}

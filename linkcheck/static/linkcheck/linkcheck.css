@@ -1,0 +1,196 @@
+/* Link Check — zelfde huisstijl als Character Scan / Corp KillBoard / Finance.
+   Alles gescoped onder .lc-app zodat we niets van AA of een ander thema raken.
+   Bewust géén var(--bs-tertiary-bg): die is in het donkere AA-thema lichtgrijs,
+   wat witte tekst op een witte kaart oplevert. */
+
+.lc-app {
+    --lc-surface: #0f0f22;
+    --lc-surface-2: #13132b;
+    --lc-border: #1c1c35;
+    --lc-text: #e1e4f0;
+    --lc-dim: #8a90b0;
+    --lc-green: #3ecf6e;
+    --lc-amber: #f0c040;
+    --lc-red: #e05555;
+    --lc-blue: #00b4d8;
+}
+
+.lc-app .card {
+    background: var(--lc-surface);
+    border: 1px solid var(--lc-border);
+}
+
+/* ── Tegels ───────────────────────────────────────────────────────────────── */
+.lc-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    max-width: 46rem; /* anders rekken drie tegels zich over een breed scherm uit */
+}
+
+.lc-tile {
+    flex: 1 1 160px;
+    background: var(--lc-surface);
+    border: 1px solid var(--lc-border);
+    border-left: 4px solid var(--lc-dim);
+    border-radius: .4rem;
+    padding: .6rem .9rem;
+}
+
+.lc-tile-n {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.lc-tile-l {
+    color: var(--lc-dim);
+    font-size: .8rem;
+}
+
+.lc-tile-blue  { border-left-color: var(--lc-blue); }
+.lc-tile-green { border-left-color: var(--lc-green); }
+.lc-tile-amber { border-left-color: var(--lc-amber); }
+.lc-tile-red   { border-left-color: var(--lc-red); }
+
+.lc-btn {
+    background: var(--lc-surface-2);
+    border: 1px solid var(--lc-border);
+    color: var(--lc-text);
+}
+
+.lc-btn:hover {
+    background: var(--lc-border);
+    color: var(--lc-text);
+}
+
+.lc-corp {
+    width: auto;
+    min-width: 12rem;
+    background: var(--lc-surface-2);
+    border-color: var(--lc-border);
+    color: var(--lc-text);
+}
+
+/* ── Tabel ────────────────────────────────────────────────────────────────── */
+.lc-table {
+    --bs-table-bg: transparent;
+    color: var(--lc-text);
+}
+
+.lc-table thead th {
+    background: var(--lc-surface-2);
+    border-bottom: 1px solid var(--lc-border);
+    vertical-align: bottom;
+    font-weight: 600;
+}
+
+.lc-table td,
+.lc-table th {
+    border-color: var(--lc-border);
+}
+
+/* De ledenkolom blijft staan als je horizontaal door de koppelingen scrolt —
+   zonder dat weet je bij tien kolommen niet meer wiens rij je leest. */
+.lc-sticky {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--lc-surface);
+    min-width: 15rem;
+}
+
+.lc-table thead .lc-sticky {
+    background: var(--lc-surface-2);
+    z-index: 3;
+}
+
+.lc-col {
+    max-width: 6.5rem;
+    min-width: 4rem;
+}
+
+.lc-colname {
+    display: inline-block;
+    font-size: .72rem;
+    line-height: 1.15;
+    color: var(--lc-dim);
+    word-break: break-word;
+}
+
+.lc-member {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--lc-text);
+    text-decoration: none;
+}
+
+.lc-member:hover { color: var(--lc-blue); }
+
+.lc-name {
+    display: block;
+    font-weight: 600;
+    line-height: 1.15;
+}
+
+.lc-sub {
+    display: block;
+    color: var(--lc-dim);
+    font-size: .75rem;
+    line-height: 1.2;
+}
+
+/* ── Cellen ───────────────────────────────────────────────────────────────── */
+.lc-cell { font-size: .95rem; }
+.lc-yes  { color: var(--lc-green); font-weight: 700; }
+.lc-no   { color: var(--lc-red); font-weight: 700; }
+.lc-part { color: var(--lc-amber); font-weight: 600; font-size: .8rem; }
+.lc-na   { color: var(--lc-dim); opacity: .5; }
+.lc-opt  { color: var(--lc-dim); font-size: .7rem; }
+
+/* Rijkleur alleen als linkerrand: een hele rij inkleuren maakt de tabel
+   onleesbaar zodra er tien kolommen naast elkaar staan. */
+.lc-table tbody tr { border-left: 3px solid transparent; }
+.lc-ok   .lc-sticky { box-shadow: inset 3px 0 0 var(--lc-green); }
+.lc-warn .lc-sticky { box-shadow: inset 3px 0 0 var(--lc-amber); }
+.lc-bad  .lc-sticky { box-shadow: inset 3px 0 0 var(--lc-red); }
+
+.lc-badge {
+    display: inline-block;
+    margin-top: .15rem;
+    padding: 0 .35rem;
+    border-radius: .25rem;
+    background: rgba(128, 128, 128, .18);
+    color: var(--lc-dim);
+    font-size: .68rem;
+    white-space: nowrap;
+}
+
+.lc-badge-red {
+    background: rgba(224, 85, 85, .18);
+    color: var(--lc-red);
+}
+
+/* ── Voortgang ────────────────────────────────────────────────────────────── */
+.lc-prog {
+    width: 7rem;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(128, 128, 128, .2);
+    overflow: hidden;
+}
+
+.lc-prog-bar {
+    height: 100%;
+    background: var(--lc-green);
+}
+
+.lc-warn .lc-prog-bar { background: var(--lc-amber); }
+.lc-bad  .lc-prog-bar { background: var(--lc-red); }
+
+.lc-legend {
+    margin-top: .6rem;
+    color: var(--lc-dim);
+    font-size: .78rem;
+}

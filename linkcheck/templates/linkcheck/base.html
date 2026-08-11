@@ -1,0 +1,26 @@
+{% extends 'allianceauth/base-bs5.html' %}
+
+{% load i18n %}
+{% load static %}
+
+{% block page_title %}{% translate "Link Check" %}{% endblock %}
+
+{% block header_nav_brand %}{% translate "Link Check" %}{% endblock header_nav_brand %}
+
+{% block extra_css %}
+    {# ?v= zodat de browser na een versiebump niet op de oude CSS blijft zitten #}
+    <link rel="stylesheet" href="{% static 'linkcheck/linkcheck.css' %}?v={{ versie }}">
+{% endblock extra_css %}
+
+{% block content %}
+    <div class="lc-app">
+        {% if not charlink %}
+            <div class="alert alert-warning">
+                <strong>{% translate "CharLink is niet beschikbaar." %}</strong>
+                {% translate "Link Check leest de koppelingen uit CharLink. Installeer/activeer de app 'charlink' om dit overzicht te kunnen gebruiken." %}
+            </div>
+        {% else %}
+            {% block details %}{% endblock %}
+        {% endif %}
+    </div>
+{% endblock %}
