@@ -1,0 +1,24 @@
+/* De aankruislijst met koppelingen in het admin-paneel.
+   Zonder dit is de kolom zo smal dat een label middenin z'n id afbreekt
+   ("allianceauth.authentication _default"). */
+
+#id_required_imports {
+    max-width: 46rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    column-width: 21rem;
+    column-gap: 1.5rem;
+}
+
+#id_required_imports li {
+    margin-bottom: .25rem;
+    break-inside: avoid;
+}
+
+#id_required_imports label {
+    display: inline;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: keep-all;
+}

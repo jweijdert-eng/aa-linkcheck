@@ -53,9 +53,12 @@ dashboard plat.
 
 ## Instellingen (admin → Link Check → instellingen)
 
-* **Verplichte koppelingen** — welke CharLink-koppelingen meetellen voor
-  "compleet". Eén id per regel, zoals in de tooltip van de kolomkop staat
-  (bijv. `memberaudit_default`). Leeg = alles waar het account recht op heeft.
+* **Verplichte koppelingen** — een **aankruislijst** van alles wat CharLink
+  kent; vink aan wat meetelt voor "compleet". Niets aangevinkt = alles waar het
+  account recht op heeft. Achter elke naam staat het id, want twee apps mogen
+  dezelfde weergavenaam hebben. Een aangevinkte koppeling waarvan de app
+  verdwijnt blijft staan met de melding *niet meer geïnstalleerd*, zodat een
+  eis nooit stilletjes wegvalt.
 * **Alleen deze states** — welke AA-states op het overzicht horen. Leeg = elk
   account met een main, behalve Guest.
 * **Guests meetellen** — zet Guests er alsnog bij.

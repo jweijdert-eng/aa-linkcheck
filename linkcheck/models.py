@@ -29,9 +29,9 @@ class Settings(models.Model):
     required_imports = models.TextField(
         blank=True, default="", verbose_name=_("Verplichte koppelingen"),
         help_text=_(
-            "Welke CharLink-koppelingen meetellen voor 'goed gekoppeld' — één id per "
-            "regel, precies zoals op de pagina onder een kolomkop staat "
-            "(bijv. memberaudit_default). Leeg = alles waar het lid recht op heeft."
+            "Welke CharLink-koppelingen meetellen voor 'goed gekoppeld'. In het "
+            "admin-paneel is dit een aankruislijst; onderwater staan hier de ids "
+            "komma-gescheiden. Leeg = alles waar het lid recht op heeft."
         ),
     )
     member_states = models.TextField(
