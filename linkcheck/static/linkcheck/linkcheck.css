@@ -25,7 +25,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: .75rem;
-    max-width: 46rem; /* anders rekken drie tegels zich over een breed scherm uit */
+    max-width: 62rem; /* anders rekken de tegels zich over een breed scherm uit */
 }
 
 .lc-tile {
@@ -70,6 +70,29 @@
     background: var(--lc-surface-2);
     border-color: var(--lc-border);
     color: var(--lc-text);
+}
+
+/* ── Zoeken ───────────────────────────────────────────────────────────────── */
+.lc-zoek {
+    display: inline-flex;
+    gap: .35rem;
+    align-items: center;
+}
+
+.lc-input {
+    width: 16rem;
+    background: var(--lc-surface-2);
+    border-color: var(--lc-border);
+    color: var(--lc-text);
+}
+
+.lc-input::placeholder { color: var(--lc-dim); }
+
+.lc-input:focus {
+    background: var(--lc-surface-2);
+    color: var(--lc-text);
+    border-color: var(--lc-blue);
+    box-shadow: none;
 }
 
 /* ── Tabel ────────────────────────────────────────────────────────────────── */

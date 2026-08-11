@@ -5,7 +5,7 @@
 {% block details %}
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
         <h2 class="mb-0">🔗 {% translate "Link Check" %}</h2>
-        <a href="?scope={{ scope }}&amp;corp={{ corp_id }}&amp;sort={{ sort }}&amp;refresh=1" class="btn btn-sm lc-btn"
+        <a href="?scope={{ scope }}&amp;corp={{ corp_id }}&amp;sort={{ sort }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}&amp;refresh=1" class="btn btn-sm lc-btn"
            title="{% translate 'Opnieuw berekenen (omzeilt de 10-minuten-cache)' %}">
             <span style="font-weight:bold;font-size:1.15em">&#8635;</span> {% translate "Ververs" %}
         </a>
@@ -24,11 +24,17 @@
             <div class="lc-tile-n">{{ n_revoked }}</div>
             <div class="lc-tile-l">{% translate "met een ingetrokken token" %}</div>
         </div>
+        {% if discord_available %}
+            <div class="lc-tile {% if n_no_discord %}lc-tile-amber{% else %}lc-tile-green{% endif %}">
+                <div class="lc-tile-n">{{ n_no_discord }}</div>
+                <div class="lc-tile-l">{% translate "zonder Discord" %}</div>
+            </div>
+        {% endif %}
     </div>
 
     <form method="get" class="d-flex gap-2 flex-wrap mb-3 align-items-center">
         {% for f in scopes %}
-            <a href="?scope={{ f.key }}{% if corp_id %}&amp;corp={{ corp_id }}{% endif %}&amp;sort={{ sort }}"
+            <a href="?scope={{ f.key }}{% if corp_id %}&amp;corp={{ corp_id }}{% endif %}&amp;sort={{ sort }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}"
                class="btn btn-sm {% if scope == f.key %}btn-{{ f.color }}{% else %}btn-outline-{{ f.color }}{% endif %}">
                 {{ f.label }}
             </a>
@@ -41,14 +47,27 @@
                 <option value="{{ id }}" {% if corp_id == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
             {% endfor %}
         </select>
+        <span class="lc-zoek">
+            <input type="search" name="q" value="{{ q }}" class="form-control form-control-sm lc-input"
+                   placeholder="{% translate 'Zoek op naam, alt of corp…' %}" aria-label="{% translate 'Zoeken' %}">
+            <button type="submit" class="btn btn-sm lc-btn">{% translate "Zoek" %}</button>
+            {% if q %}
+                <a class="btn btn-sm lc-btn"
+                   href="?scope={{ scope }}{% if corp_id %}&amp;corp={{ corp_id }}{% endif %}&amp;sort={{ sort }}"
+                   title="{% translate 'Zoekopdracht wissen' %}">✕</a>
+            {% endif %}
+        </span>
         <span class="ms-auto small text-muted">
-            {{ rows|length }} {% translate "rij(en)" %}
+            {{ rows|length }} {% translate "rij(en)" %}{% if q %} {% translate "voor" %} “{{ q }}”{% endif %}
         </span>
     </form>
 
     {% if not rows %}
         <div class="alert alert-secondary">
-            {% if scope == 'incomplete' %}
+            {% if q %}
+                {% blocktranslate %}Niets gevonden voor “{{ q }}”.{% endblocktranslate %}
+                {% translate "Let op dat het huidige filter ook nog meetelt." %}
+            {% elif scope == 'incomplete' %}
                 ✅ {% translate "Iedereen is compleet gekoppeld." %}
             {% elif scope == 'revoked' %}
                 ✅ {% translate "Geen ingetrokken tokens." %}
@@ -72,6 +91,12 @@
                                 <a class="lc-sort {% if sort_links.state.active %}is-on{% endif %}"
                                    href="{{ sort_links.state.url }}">{% translate "State" %} <span class="lc-arrow">{{ sort_links.state.arrow }}</span></a>
                             </th>
+                            {% if discord_available %}
+                                <th class="text-center">
+                                    <a class="lc-sort {% if sort_links.discord.active %}is-on{% endif %}"
+                                       href="{{ sort_links.discord.url }}">{% translate "Discord" %} <span class="lc-arrow">{{ sort_links.discord.arrow }}</span></a>
+                                </th>
+                            {% endif %}
                             <th class="text-center">
                                 <a class="lc-sort {% if sort_links.chars.active %}is-on{% endif %}"
                                    href="{{ sort_links.chars.url }}">{% translate "Chars" %} <span class="lc-arrow">{{ sort_links.chars.arrow }}</span></a>
@@ -114,6 +139,15 @@
                                         <span class="lc-na">–</span>
                                     {% endif %}
                                 </td>
+                                {% if discord_available %}
+                                    <td class="text-center">
+                                        {% if r.discord %}
+                                            <span class="lc-yes" title="{{ r.discord }}">✓</span>
+                                        {% else %}
+                                            <span class="lc-no" title="{% translate 'Geen Discord gekoppeld' %}">✕</span>
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
                                 <td class="text-center">{{ r.n_chars }}</td>
                                 {% for cell in r.cells %}
                                     <td class="text-center lc-cell">

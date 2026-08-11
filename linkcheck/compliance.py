@@ -33,7 +33,7 @@ from .models import Settings
 # Achtervoegsel meebumpen zodra de vorm van een rij verandert, anders blijft er
 # na een update tot 10 minuten een oude rij in de cache zitten zonder de nieuwe
 # velden.
-CACHE_KEY = "linkcheck_rows_v2"
+CACHE_KEY = "linkcheck_rows_v4"
 CACHE_SECONDS = 600  # 10 min; de "Ververs"-knop omzeilt dit
 
 
@@ -138,6 +138,27 @@ def _member_users(conf):
     return result
 
 
+def _discord_names(user_ids):
+    """{user_id: discord-naam} of None als de Discord-service er niet is.
+
+    Soft: draait deze installatie zonder de AA-Discord-module, dan verdwijnt de
+    kolom in plaats van bij iedereen een kruisje te zetten — "niet gekoppeld"
+    en "kan niet gekoppeld worden" zijn twee verschillende dingen.
+    """
+    try:
+        from allianceauth.services.modules.discord.models import DiscordUser
+    except Exception:  # noqa: BLE001 — service niet geïnstalleerd
+        return None
+
+    try:
+        return {
+            du.user_id: (du.username or str(du.uid))
+            for du in DiscordUser.objects.filter(user_id__in=user_ids)
+        }
+    except Exception:  # noqa: BLE001 — module aanwezig maar niet gemigreerd
+        return None
+
+
 def _state_kind(name: str) -> str:
     """Kleurgroep voor de state-kolom.
 
@@ -205,6 +226,7 @@ def build_rows(force=False):
         per_user[char.character_ownership.user_id].append(char)
 
     _with_token, revoked_ids = _token_state([c.character_id for c in chars])
+    discord = _discord_names(user_ids)
 
     rows = []
     for user in users:
@@ -245,6 +267,10 @@ def build_rows(force=False):
             "state_kind": _state_kind(
                 getattr(getattr(user.profile, "state", None), "name", "")),
             "n_chars": total,
+            # None = de Discord-service draait hier niet, dus niets te zeggen.
+            "discord": None if discord is None else discord.get(user.pk, ""),
+            # Ook de alts, zodat je op de naam van een alt het account vindt.
+            "char_names": [c.character_name for c in user_chars],
             "cells": cells,
             "revoked": revoked,
             "missing": missing,
@@ -261,6 +287,8 @@ def build_rows(force=False):
         "charlink": True,
         "rows": rows,
         "columns": cols,
+        "discord_available": discord is not None,
+        "n_no_discord": sum(1 for r in rows if r["discord"] == ""),
         "n_incomplete": sum(1 for r in rows if not r["complete"]),
         "n_revoked": sum(1 for r in rows if r["revoked"]),
     }

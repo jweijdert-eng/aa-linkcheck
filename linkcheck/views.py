@@ -22,20 +22,36 @@ SORTS = {
     "corp": lambda r: (r["corp_name"].lower(), r["main_name"].lower()),
     "chars": lambda r: (r["n_chars"], r["main_name"].lower()),
     "state": lambda r: (r["state"].lower(), r["main_name"].lower()),
+    # Zonder Discord eerst — dat is de rij waar je iets mee moet.
+    "discord": lambda r: (bool(r.get("discord")), r["main_name"].lower()),
     # Standaard: wie nog iets open heeft staan bovenaan, slechtste score eerst.
     "status": lambda r: (r["complete"], r["pct"], r["main_name"].lower()),
 }
 DEFAULT_SORT = "status"
 
 
-def _sort_links(sort, scope, corp_id):
+def _matches(row, needle):
+    """Zoekt in de main, de corp, de username én de namen van de alts.
+
+    Die laatste is het punt: iemand kent vaak alleen de alt waar hij mee vloog,
+    niet de main waar het account op staat.
+    """
+    haystack = " ".join([
+        row["main_name"], row["corp_name"], row["alliance_name"],
+        row["username"], *row.get("char_names", []),
+    ]).lower()
+    return all(deel in haystack for deel in needle.lower().split())
+
+
+def _sort_links(sort, scope, corp_id, q=""):
     """Per kolom de URL die erop sorteert + het pijltje van de huidige sortering."""
     links = {}
     for key in SORTS:
         omgekeerd = sort == key  # al oplopend? dan aflopend aanbieden
         links[key] = {
             "url": "?" + urlencode({
-                "scope": scope, "corp": corp_id, "sort": f"-{key}" if omgekeerd else key,
+                "scope": scope, "corp": corp_id, "q": q,
+                "sort": f"-{key}" if omgekeerd else key,
             }),
             "arrow": "▲" if sort == key else ("▼" if sort == f"-{key}" else ""),
             "active": sort.lstrip("-") == key,
@@ -72,6 +88,10 @@ def index(request):
     elif scope == "revoked":
         rows = [r for r in rows if r["revoked"]]
 
+    q = (request.GET.get("q") or "").strip()
+    if q:
+        rows = [r for r in rows if _matches(r, q)]
+
     sort = request.GET.get("sort") or DEFAULT_SORT
     sleutel = sort.lstrip("-")
     if sleutel not in SORTS:  # onbekende sleutel uit de URL: terug naar standaard
@@ -90,7 +110,10 @@ def index(request):
         rows=rows,
         columns=data["columns"],
         sort=sort,
-        sort_links=_sort_links(sort, scope, corp_id),
+        sort_links=_sort_links(sort, scope, corp_id, q),
+        q=q,
+        discord_available=data.get("discord_available", False),
+        n_no_discord=data.get("n_no_discord", 0),
         n_total=len(data["rows"]),
         n_incomplete=data["n_incomplete"],
         n_revoked=data.get("n_revoked", 0),
