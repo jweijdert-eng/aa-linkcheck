@@ -69,6 +69,10 @@
                                    href="{{ sort_links.corp.url }}">{% translate "corp" %} <span class="lc-arrow">{{ sort_links.corp.arrow }}</span></a>
                             </th>
                             <th class="text-center">
+                                <a class="lc-sort {% if sort_links.state.active %}is-on{% endif %}"
+                                   href="{{ sort_links.state.url }}">{% translate "State" %} <span class="lc-arrow">{{ sort_links.state.arrow }}</span></a>
+                            </th>
+                            <th class="text-center">
                                 <a class="lc-sort {% if sort_links.chars.active %}is-on{% endif %}"
                                    href="{{ sort_links.chars.url }}">{% translate "Chars" %} <span class="lc-arrow">{{ sort_links.chars.arrow }}</span></a>
                             </th>
@@ -92,7 +96,8 @@
                                              alt="" width="32" height="32" class="rounded">
                                         <span>
                                             <span class="lc-name">{{ r.main_name }}</span>
-                                            <span class="lc-sub">{{ r.corp_name }}{% if r.state %} · {{ r.state }}{% endif %}</span>
+                                            {# state staat sinds v1.3.0 in een eigen kolom #}
+                                            <span class="lc-sub">{{ r.corp_name }}</span>
                                         </span>
                                     </a>
                                     {% if r.revoked %}
@@ -100,6 +105,13 @@
                                               title="{% translate 'Toestemming ingetrokken' %}: {{ r.revoked|join:', ' }}">
                                             ⚠ {{ r.revoked|length }} {% translate "ingetrokken" %}
                                         </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if r.state %}
+                                        <span class="lc-state lc-state-{{ r.state_kind }}">{{ r.state }}</span>
+                                    {% else %}
+                                        <span class="lc-na">–</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-center">{{ r.n_chars }}</td>

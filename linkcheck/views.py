@@ -21,6 +21,7 @@ SORTS = {
     "name": lambda r: r["main_name"].lower(),
     "corp": lambda r: (r["corp_name"].lower(), r["main_name"].lower()),
     "chars": lambda r: (r["n_chars"], r["main_name"].lower()),
+    "state": lambda r: (r["state"].lower(), r["main_name"].lower()),
     # Standaard: wie nog iets open heeft staan bovenaan, slechtste score eerst.
     "status": lambda r: (r["complete"], r["pct"], r["main_name"].lower()),
 }

@@ -30,7 +30,10 @@ from allianceauth.eveonline.models import EveCharacter
 
 from .models import Settings
 
-CACHE_KEY = "linkcheck_rows"
+# Achtervoegsel meebumpen zodra de vorm van een rij verandert, anders blijft er
+# na een update tot 10 minuten een oude rij in de cache zitten zonder de nieuwe
+# velden.
+CACHE_KEY = "linkcheck_rows_v2"
 CACHE_SECONDS = 600  # 10 min; de "Ververs"-knop omzeilt dit
 
 
@@ -135,6 +138,20 @@ def _member_users(conf):
     return result
 
 
+def _state_kind(name: str) -> str:
+    """Kleurgroep voor de state-kolom.
+
+    Alleen Guest en Member krijgen een kleur; een eigen state (Blue, Corporation,
+    …) blijft neutraal in plaats van een willekeurige kleur te pakken.
+    """
+    lowered = (name or "").strip().lower()
+    if lowered == "guest":
+        return "guest"
+    if lowered == "member":
+        return "member"
+    return "other"
+
+
 def _cell(key, label, linked, total, unlinked, required, na=False):
     return {
         "key": key,
@@ -225,6 +242,8 @@ def build_rows(force=False):
             "corp_name": main.corporation_name or "",
             "alliance_name": main.alliance_name or "",
             "state": getattr(getattr(user.profile, "state", None), "name", "") or "",
+            "state_kind": _state_kind(
+                getattr(getattr(user.profile, "state", None), "name", "")),
             "n_chars": total,
             "cells": cells,
             "revoked": revoked,
