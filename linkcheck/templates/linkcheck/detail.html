@@ -25,7 +25,6 @@
                             {% for c in account.columns %}
                                 <th class="text-center lc-col" title="{{ c.label }} — {{ c.n_scopes }} scope(s) · {{ c.key }}">
                                     <span class="lc-colname">{{ c.label }}</span>
-                                    {% if not c.required %}<span class="lc-opt">○</span>{% endif %}
                                 </th>
                             {% endfor %}
                             <th class="text-center">{% translate "Gekoppeld" %}</th>

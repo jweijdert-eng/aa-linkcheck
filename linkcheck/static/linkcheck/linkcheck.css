@@ -118,6 +118,25 @@
     word-break: break-word;
 }
 
+/* ── Sorteerbare kolomkoppen ──────────────────────────────────────────────── */
+.lc-sort {
+    color: var(--lc-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.lc-sort:hover { color: var(--lc-blue); }
+.lc-sort.is-on { color: var(--lc-blue); }
+
+.lc-sort-sub {
+    margin-left: .5rem;
+    color: var(--lc-dim);
+    font-weight: 400;
+    font-size: .75rem;
+}
+
+.lc-arrow { font-size: .7rem; }
+
 .lc-member {
     display: inline-flex;
     align-items: center;
@@ -147,7 +166,6 @@
 .lc-no   { color: var(--lc-red); font-weight: 700; }
 .lc-part { color: var(--lc-amber); font-weight: 600; font-size: .8rem; }
 .lc-na   { color: var(--lc-dim); opacity: .5; }
-.lc-opt  { color: var(--lc-dim); font-size: .7rem; }
 
 /* Rijkleur alleen als linkerrand: een hele rij inkleuren maakt de tabel
    onleesbaar zodra er tien kolommen naast elkaar staan. */

@@ -5,7 +5,7 @@
 {% block details %}
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
         <h2 class="mb-0">🔗 {% translate "Link Check" %}</h2>
-        <a href="?scope={{ scope }}&amp;corp={{ corp_id }}&amp;refresh=1" class="btn btn-sm lc-btn"
+        <a href="?scope={{ scope }}&amp;corp={{ corp_id }}&amp;sort={{ sort }}&amp;refresh=1" class="btn btn-sm lc-btn"
            title="{% translate 'Opnieuw berekenen (omzeilt de 10-minuten-cache)' %}">
             <span style="font-weight:bold;font-size:1.15em">&#8635;</span> {% translate "Ververs" %}
         </a>
@@ -28,12 +28,13 @@
 
     <form method="get" class="d-flex gap-2 flex-wrap mb-3 align-items-center">
         {% for f in scopes %}
-            <a href="?scope={{ f.key }}{% if corp_id %}&amp;corp={{ corp_id }}{% endif %}"
+            <a href="?scope={{ f.key }}{% if corp_id %}&amp;corp={{ corp_id }}{% endif %}&amp;sort={{ sort }}"
                class="btn btn-sm {% if scope == f.key %}btn-{{ f.color }}{% else %}btn-outline-{{ f.color }}{% endif %}">
                 {{ f.label }}
             </a>
         {% endfor %}
         <input type="hidden" name="scope" value="{{ scope }}">
+        <input type="hidden" name="sort" value="{{ sort }}">
         <select name="corp" class="form-select form-select-sm lc-corp" onchange="this.form.submit()">
             <option value="">{% translate "Alle corporaties" %}</option>
             {% for id, name in corps %}
@@ -61,15 +62,25 @@
                 <table class="table table-sm align-middle mb-0 lc-table">
                     <thead>
                         <tr>
-                            <th class="lc-sticky">{% translate "Lid" %}</th>
-                            <th class="text-center">{% translate "Chars" %}</th>
+                            <th class="lc-sticky">
+                                <a class="lc-sort {% if sort_links.name.active %}is-on{% endif %}"
+                                   href="{{ sort_links.name.url }}">{% translate "Lid" %} <span class="lc-arrow">{{ sort_links.name.arrow }}</span></a>
+                                <a class="lc-sort lc-sort-sub {% if sort_links.corp.active %}is-on{% endif %}"
+                                   href="{{ sort_links.corp.url }}">{% translate "corp" %} <span class="lc-arrow">{{ sort_links.corp.arrow }}</span></a>
+                            </th>
+                            <th class="text-center">
+                                <a class="lc-sort {% if sort_links.chars.active %}is-on{% endif %}"
+                                   href="{{ sort_links.chars.url }}">{% translate "Chars" %} <span class="lc-arrow">{{ sort_links.chars.arrow }}</span></a>
+                            </th>
                             {% for c in columns %}
                                 <th class="text-center lc-col" title="{{ c.label }} — {{ c.n_scopes }} scope(s) · {{ c.key }}">
                                     <span class="lc-colname">{{ c.label }}</span>
-                                    {% if not c.required %}<span class="lc-opt" title="{% translate 'Telt niet mee voor compleet' %}">○</span>{% endif %}
                                 </th>
                             {% endfor %}
-                            <th class="text-nowrap">{% translate "Status" %}</th>
+                            <th class="text-nowrap">
+                                <a class="lc-sort {% if sort_links.status.active %}is-on{% endif %}"
+                                   href="{{ sort_links.status.url }}">{% translate "Status" %} <span class="lc-arrow">{{ sort_links.status.arrow }}</span></a>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,8 +139,9 @@
             ✓ {% translate "alle characters gekoppeld" %} ·
             <span class="lc-part">2/3</span> {% translate "deels" %} ·
             ✕ {% translate "geen enkele" %} ·
-            <span class="lc-na">–</span> {% translate "niet van toepassing (geen rechten voor die app)" %} ·
-            <span class="lc-opt">○</span> {% translate "telt niet mee voor 'compleet'" %}
+            <span class="lc-na">–</span> {% translate "niet van toepassing (geen rechten voor die app)" %}
+            <br>
+            {% translate "Alleen de koppelingen die in de admin zijn aangevinkt staan hier; is er niets aangevinkt, dan tellen ze allemaal mee." %}
         </p>
     {% endif %}
 {% endblock %}

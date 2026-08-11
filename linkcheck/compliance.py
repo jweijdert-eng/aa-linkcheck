@@ -168,7 +168,10 @@ def build_rows(force=False):
 
     conf = Settings.load()
     required_keys = set(conf.required_list())
-    cols = columns(imports, required_keys)
+    # Heeft een beheerder koppelingen aangevinkt, dan tonen we alléén die —
+    # de rest is ruis in een tabel die toch al breed is. Zonder selectie telt
+    # alles mee en staat dus ook alles in beeld.
+    cols = [c for c in columns(imports, required_keys) if c["required"]]
     users = _member_users(conf)
     user_ids = [u.pk for u in users]
 
@@ -256,8 +259,9 @@ def account_detail(user):
 
     conf = Settings.load()
     required_keys = set(conf.required_list())
+    mag = {i.get_query_id() for i in imports if _may(i, user)}
     cols = [c for c in columns(imports, required_keys)
-            if c["key"] in {i.get_query_id() for i in imports if _may(i, user)}]
+            if c["required"] and c["key"] in mag]
 
     chars = list(chars_annotate_linked_apps(
         EveCharacter.objects.filter(character_ownership__user=user), imports

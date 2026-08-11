@@ -15,6 +15,11 @@ Check maakt daar een kruistabel van: **rij = AA-account, kolom = koppeling**.
   Dat gebeurt als iemand z'n toestemming op de EVE-site intrekt — de app denkt
   dan dat het character gekoppeld is terwijl er niets meer op te halen valt.
 * Filters op *niet compleet*, *ingetrokken tokens* en per corporatie.
+* Sorteren door op een kolomkop te klikken: **Lid**, **corp**, **Chars** of
+  **Status**; nog een klik draait de richting om. De sortering blijft staan als
+  je daarna filtert of ververst.
+* Zijn er koppelingen aangevinkt als verplicht, dan staan **alleen die** in de
+  tabel — anders wordt hij onnodig breed.
 * Detailpagina per account: welke van z'n characters welke koppeling mist, met
   een link naar CharLink om het in één keer recht te zetten.
 
