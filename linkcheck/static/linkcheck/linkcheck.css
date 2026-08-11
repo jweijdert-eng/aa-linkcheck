@@ -1,4 +1,4 @@
-/* Link Check — zelfde huisstijl als Character Scan / Corp KillBoard / Finance.
+﻿/* Link Check — zelfde huisstijl als Character Scan / Corp KillBoard / Finance.
    Alles gescoped onder .lc-app zodat we niets van AA of een ander thema raken.
    Bewust géén var(--bs-tertiary-bg): die is in het donkere AA-thema lichtgrijs,
    wat witte tekst op een witte kaart oplevert. */
@@ -25,7 +25,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: .75rem;
-    max-width: 62rem; /* anders rekken de tegels zich over een breed scherm uit */
+    max-width: 78rem; /* anders rekken de tegels zich over een breed scherm uit */
 }
 
 .lc-tile {

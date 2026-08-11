@@ -24,12 +24,12 @@
             <div class="lc-tile-n">{{ n_revoked }}</div>
             <div class="lc-tile-l">{% translate "met een ingetrokken token" %}</div>
         </div>
-        {% if discord_available %}
-            <div class="lc-tile {% if n_no_discord %}lc-tile-amber{% else %}lc-tile-green{% endif %}">
-                <div class="lc-tile-n">{{ n_no_discord }}</div>
-                <div class="lc-tile-l">{% translate "zonder Discord" %}</div>
+        {% for s in services %}
+            <div class="lc-tile {% if s.n_missing %}lc-tile-amber{% else %}lc-tile-green{% endif %}">
+                <div class="lc-tile-n">{{ s.n_missing }}</div>
+                <div class="lc-tile-l">{% translate "zonder" %} {{ s.label }}</div>
             </div>
-        {% endif %}
+        {% endfor %}
     </div>
 
     <form method="get" class="d-flex gap-2 flex-wrap mb-3 align-items-center">
@@ -91,12 +91,12 @@
                                 <a class="lc-sort {% if sort_links.state.active %}is-on{% endif %}"
                                    href="{{ sort_links.state.url }}">{% translate "State" %} <span class="lc-arrow">{{ sort_links.state.arrow }}</span></a>
                             </th>
-                            {% if discord_available %}
+                            {% for s in services %}
                                 <th class="text-center">
-                                    <a class="lc-sort {% if sort_links.discord.active %}is-on{% endif %}"
-                                       href="{{ sort_links.discord.url }}">{% translate "Discord" %} <span class="lc-arrow">{{ sort_links.discord.arrow }}</span></a>
+                                    <a class="lc-sort {% if s.sort.active %}is-on{% endif %}"
+                                       href="{{ s.sort.url }}">{{ s.label }} <span class="lc-arrow">{{ s.sort.arrow }}</span></a>
                                 </th>
-                            {% endif %}
+                            {% endfor %}
                             <th class="text-center">
                                 <a class="lc-sort {% if sort_links.chars.active %}is-on{% endif %}"
                                    href="{{ sort_links.chars.url }}">{% translate "Chars" %} <span class="lc-arrow">{{ sort_links.chars.arrow }}</span></a>
@@ -139,15 +139,15 @@
                                         <span class="lc-na">–</span>
                                     {% endif %}
                                 </td>
-                                {% if discord_available %}
+                                {% for naam in r.service_cells %}
                                     <td class="text-center">
-                                        {% if r.discord %}
-                                            <span class="lc-yes" title="{{ r.discord }}">✓</span>
+                                        {% if naam %}
+                                            <span class="lc-yes" title="{{ naam }}">✓</span>
                                         {% else %}
-                                            <span class="lc-no" title="{% translate 'Geen Discord gekoppeld' %}">✕</span>
+                                            <span class="lc-no" title="{% translate 'Niet gekoppeld' %}">✕</span>
                                         {% endif %}
                                     </td>
-                                {% endif %}
+                                {% endfor %}
                                 <td class="text-center">{{ r.n_chars }}</td>
                                 {% for cell in r.cells %}
                                     <td class="text-center lc-cell">

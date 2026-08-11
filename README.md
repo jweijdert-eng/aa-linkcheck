@@ -14,11 +14,13 @@ Check maakt daar een kruistabel van: **rij = AA-account, kolom = koppeling**.
 * **Ingetrokken tokens**: er ligt nog een tokenrij, maar zonder `refresh_token`.
   Dat gebeurt als iemand z'n toestemming op de EVE-site intrekt — de app denkt
   dan dat het character gekoppeld is terwijl er niets meer op te halen valt.
-* Een **Discord**-kolom (✓/✕) zodra de AA-Discord-service draait, met de
-  Discord-naam in de tooltip en een tegel *zonder Discord*. Draait die service
-  niet, dan verdwijnt de kolom — "niet gekoppeld" en "kan hier niet gekoppeld
-  worden" zijn niet hetzelfde. Discord telt **niet** mee voor "compleet"; dat
-  gaat alleen over ESI-koppelingen.
+* Kolommen (✓/✕) voor de AA-services **Discord** en **TeamSpeak**, met de
+  gekoppelde naam in de tooltip en per service een tegel *zonder …*. Een kolom
+  verschijnt alleen als die service ook echt draait — installeer je TeamSpeak
+  later, dan staat de kolom er vanzelf, zonder dat hier iets aangepast hoeft te
+  worden. Andersom zouden "niet gekoppeld" en "kan hier niet gekoppeld worden"
+  op elkaar gaan lijken, en dat zijn twee verschillende dingen. Deze services tellen
+  **niet** mee voor "compleet"; dat gaat alleen over ESI-koppelingen.
 * Filters op *niet compleet*, *ingetrokken tokens* en per corporatie, plus een
   **zoekveld** dat ook op de naam van een **alt** zoekt — je kent vaak alleen
   het character waar iemand mee vloog, niet de main waar het account op staat.

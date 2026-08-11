@@ -21,6 +21,7 @@ Twee dingen die een koppeling stuk maken en die we apart tellen:
   deze check ziet zo'n account er groen uit.
 """
 
+import importlib
 from collections import defaultdict
 
 from django.contrib.auth import get_user_model
@@ -33,7 +34,7 @@ from .models import Settings
 # Achtervoegsel meebumpen zodra de vorm van een rij verandert, anders blijft er
 # na een update tot 10 minuten een oude rij in de cache zitten zonder de nieuwe
 # velden.
-CACHE_KEY = "linkcheck_rows_v4"
+CACHE_KEY = "linkcheck_rows_v5"
 CACHE_SECONDS = 600  # 10 min; de "Ververs"-knop omzeilt dit
 
 
@@ -138,25 +139,40 @@ def _member_users(conf):
     return result
 
 
-def _discord_names(user_ids):
-    """{user_id: discord-naam} of None als de Discord-service er niet is.
+def _service_map(module_path, model_name, name_fields, user_ids):
+    """{user_id: weergavenaam} voor een AA-service, of None als die er niet is.
 
-    Soft: draait deze installatie zonder de AA-Discord-module, dan verdwijnt de
-    kolom in plaats van bij iedereen een kruisje te zetten — "niet gekoppeld"
-    en "kan niet gekoppeld worden" zijn twee verschillende dingen.
+    Soft: draait deze installatie zonder die service, dan verdwijnt de kolom in
+    plaats van bij iedereen een kruisje te zetten — "niet gekoppeld" en "kan
+    hier niet gekoppeld worden" zijn twee verschillende dingen.
+
+    Discord en TeamSpeak lopen allebei door deze functie, zodat ze niet uit
+    elkaar kunnen groeien.
     """
     try:
-        from allianceauth.services.modules.discord.models import DiscordUser
+        module = importlib.import_module(module_path)
+        model = getattr(module, model_name)
     except Exception:  # noqa: BLE001 — service niet geïnstalleerd
         return None
 
     try:
-        return {
-            du.user_id: (du.username or str(du.uid))
-            for du in DiscordUser.objects.filter(user_id__in=user_ids)
-        }
+        gevonden = {}
+        for row in model.objects.filter(user_id__in=user_ids):
+            naam = next(
+                (str(getattr(row, veld)) for veld in name_fields if getattr(row, veld, None)),
+                "gekoppeld",  # koppeling bestaat, maar zonder bruikbare naam
+            )
+            gevonden[row.user_id] = naam
+        return gevonden
     except Exception:  # noqa: BLE001 — module aanwezig maar niet gemigreerd
         return None
+
+
+# (module, model, velden om de naam uit te halen) per service.
+SERVICES = {
+    "discord": ("allianceauth.services.modules.discord.models", "DiscordUser", ("username", "uid")),
+    "teamspeak": ("allianceauth.services.modules.teamspeak3.models", "Teamspeak3User", ("uid",)),
+}
 
 
 def _state_kind(name: str) -> str:
@@ -226,7 +242,9 @@ def build_rows(force=False):
         per_user[char.character_ownership.user_id].append(char)
 
     _with_token, revoked_ids = _token_state([c.character_id for c in chars])
-    discord = _discord_names(user_ids)
+    diensten = {
+        naam: _service_map(*spec, user_ids) for naam, spec in SERVICES.items()
+    }
 
     rows = []
     for user in users:
@@ -267,8 +285,11 @@ def build_rows(force=False):
             "state_kind": _state_kind(
                 getattr(getattr(user.profile, "state", None), "name", "")),
             "n_chars": total,
-            # None = de Discord-service draait hier niet, dus niets te zeggen.
-            "discord": None if discord is None else discord.get(user.pk, ""),
+            # None = die service draait hier niet, dus valt er niets te zeggen.
+            **{
+                naam: (None if kaart is None else kaart.get(user.pk, ""))
+                for naam, kaart in diensten.items()
+            },
             # Ook de alts, zodat je op de naam van een alt het account vindt.
             "char_names": [c.character_name for c in user_chars],
             "cells": cells,
@@ -287,8 +308,13 @@ def build_rows(force=False):
         "charlink": True,
         "rows": rows,
         "columns": cols,
-        "discord_available": discord is not None,
-        "n_no_discord": sum(1 for r in rows if r["discord"] == ""),
+        "services": {
+            naam: {
+                "available": kaart is not None,
+                "n_missing": sum(1 for r in rows if r[naam] == ""),
+            }
+            for naam, kaart in diensten.items()
+        },
         "n_incomplete": sum(1 for r in rows if not r["complete"]),
         "n_revoked": sum(1 for r in rows if r["revoked"]),
     }

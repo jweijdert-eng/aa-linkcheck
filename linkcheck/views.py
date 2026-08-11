@@ -22,12 +22,16 @@ SORTS = {
     "corp": lambda r: (r["corp_name"].lower(), r["main_name"].lower()),
     "chars": lambda r: (r["n_chars"], r["main_name"].lower()),
     "state": lambda r: (r["state"].lower(), r["main_name"].lower()),
-    # Zonder Discord eerst — dat is de rij waar je iets mee moet.
+    # Zonder koppeling eerst — dat is de rij waar je iets mee moet.
     "discord": lambda r: (bool(r.get("discord")), r["main_name"].lower()),
+    "teamspeak": lambda r: (bool(r.get("teamspeak")), r["main_name"].lower()),
     # Standaard: wie nog iets open heeft staan bovenaan, slechtste score eerst.
     "status": lambda r: (r["complete"], r["pct"], r["main_name"].lower()),
 }
 DEFAULT_SORT = "status"
+
+# Volgorde waarin de service-kolommen verschijnen (als de service er is).
+SERVICE_LABELS = (("discord", "Discord"), ("teamspeak", "TeamSpeak"))
 
 
 def _matches(row, needle):
@@ -104,16 +108,30 @@ def index(request):
         key=lambda c: c[1].lower(),
     )
 
+    sort_links = _sort_links(sort, scope, corp_id, q)
+
+    # Alleen de services die deze installatie écht heeft krijgen een kolom.
+    beschikbaar = data.get("services", {})
+    services = [
+        {"key": key, "label": label, "sort": sort_links[key],
+         "n_missing": beschikbaar[key]["n_missing"]}
+        for key, label in SERVICE_LABELS
+        if beschikbaar.get(key, {}).get("available")
+    ]
+    # De template kan geen dynamische sleutel opzoeken, dus zetten we de cellen
+    # hier alvast in kolomvolgorde klaar.
+    for row in rows:
+        row["service_cells"] = [row.get(s["key"]) or "" for s in services]
+
     return render(request, "linkcheck/index.html", _base(
         request,
         charlink=data["charlink"],
         rows=rows,
         columns=data["columns"],
         sort=sort,
-        sort_links=_sort_links(sort, scope, corp_id, q),
+        sort_links=sort_links,
         q=q,
-        discord_available=data.get("discord_available", False),
-        n_no_discord=data.get("n_no_discord", 0),
+        services=services,
         n_total=len(data["rows"]),
         n_incomplete=data["n_incomplete"],
         n_revoked=data.get("n_revoked", 0),
